@@ -1,0 +1,66 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage{fullpage} % cambia el margen
+\usepackage{amsmath}
+
+\begin{document}
+
+\hspace*{-\parindent}%
+\begin{minipage}[t]{0.7\linewidth}
+\vspace{-0.8cm}
+\raggedright
+	%\noindent
+	\large\textbf{Project 1} \\
+	\textbf{Computational Numerical Statistics} \\
+	\normalsize DM, FCT-UNL \\
+	\textbf{2022-2023}\\
+	{\bf Group 6 : Afonso Ribeiro 59895, Franscico Freitas 60313,  Miguel Santos 64474 and Pedro Anjos 66519}
+\end{minipage}
+\begin{minipage}{0.3\linewidth}
+\raggedleft
+	\includegraphics[scale=0.12]{logo_nova-st_rgb_vert_positivo.png}
+\end{minipage}
+\\
+
+\par\noindent\rule{\textwidth}{0.4pt}
+
+\section{Introduction}
+
+This project encompasses the topics of Random number generation and Monte Carlo methods. \\
+First, we start by analyzing, studying, and using the {\bf inverse-transform (IT)} and the {\bf accept-rejection (AR)} methods (for random number generation). \\
+Following, we use some Monte Carlo methods for integration, i.e.,  we use {\bf naive Monte Carlo}, the Monte Carlo method based on the {\bf antithetic variable} technique, the Monte Carlo method based on the {\bf control variate} technique, and the Monte Carlo method based on {\bf importance sampling} to estimate the value of an integral.
+
+\section{Random Number generation}
+
+\section{Problem Resolution}
+\subsection{1.1}
+\subsubsection{(a)}
+
+PDF:
+\[f(x) = \alpha \frac{L^\alpha x^{-\alpha-1}}{1-\left(\frac{L}{H}^\alpha\right)}, \qquad \alpha, L > 0, \qquad H> L, \qquad x \in [L,H]\]\\
+
+CDF:
+
+\[F(x) =  \frac{\alpha L^\alpha}{1- \left(\frac{L}{H}\right)^\alpha} \int_{L}^{x} u^{-\alpha-1} du \Leftrightarrow \]
+\[\Leftrightarrow F(x) = \frac{\alpha L^\alpha}{1- \left(\frac{L}{H}\right)^\alpha} \left[-\frac{u^{-\alpha}}{\alpha}\right]^x_L \Leftrightarrow\]
+\[\Leftrightarrow \frac{\alpha L^\alpha}{1- \left(\frac{L}{H}\right)^\alpha} \left(-\frac{x^{-\alpha}}{\alpha} - \frac{-L^{-\alpha}}{\alpha}\right) \Leftrightarrow\]
+
+\[\Leftrightarrow F(x) = \frac{1}{1- \left(\frac{L}{H}\right)^\alpha} \left(-L^\alpha x^{-\alpha} - -L^{-\alpha} L^{\alpha} \right) \Leftrightarrow\]
+
+\[\Leftrightarrow F(x) = \frac{1}{1- \left(\frac{L}{H}\right)^\alpha} \left(-L^\alpha x^{-\alpha} - -L^{-\alpha} L^{\alpha} \right) \Leftrightarrow\]
+
+\[\Leftrightarrow F(x) = \frac{1}{1- \left(\frac{L}{H}\right)^\alpha} \left(1 - L^\alpha x^{-\alpha} \right) \Leftrightarrow\]
+
+\[\Leftrightarrow F(x) = \frac{1 - L^\alpha x^{-\alpha}}{1- \left(\frac{L}{H}\right)^\alpha}\]
+
+ITM:
+\[u = \frac{1 - L^\alpha x^{-\alpha}}{1- \left(\frac{L}{H}\right)^\alpha} \Leftrightarrow\]
+\[\Leftrightarrow u\left(1- \left(\frac{L}{H}\right)^\alpha\right) = 1 - L^\alpha x^{-\alpha} \Leftrightarrow\]
+\[\Leftrightarrow u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1= L^\alpha x^{-\alpha} \Leftrightarrow\]
+\[\Leftrightarrow \frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha} = x^{-\alpha} \Leftrightarrow\]
+\[\Leftrightarrow \sqrt[-\alpha]{\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} = x \Leftrightarrow\]
+
+\[\Leftrightarrow F^{-1}(u) = \sqrt[-\alpha]{\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} \]
+
+
+
+\end{document}

@@ -17,19 +17,21 @@ sim.IT = function(n,alpha, L, H){
 }
 
 ## por enquanto g=1 (função constante). Podemos arranjar uma distribuição exponencial para otimizar os resultados
-sim.AR = function(n,alpha, L,H, lambda){
+sim.AR = function(n,alpha, L,H){
     f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-    M = optimize(f, c(L,L+0.0000001),maximum = T)$objective
-    ##g = function(x){ lambda*exp(-lambda*x)}
-    g = 1
-    ##gITM=function(x){log(1-x)/(-lambda)}
+    g = function(x){exp(-x)}
+    h = function(x){f(x)/g(x)}
+    M = optimize(h, c(L,H),maximum = T)$objective
+
+    g.CDF=function(x){-exp(-x)+1}
+    g.ITM = function(x){-log(1-x)}
     v = vector()
     for(i in 1:n){
         u <- 1
         a <- 0
         while(u> a){
-            x.c   <- runif(1,2,3)
-            a <- f(x.c)/(M*g) 
+            x.c   <- g.ITM(runif(1,g.CDF(2),g.CDF(3))) # O g.CDF aqui serve para não estar a gerar valores desnecessários através da distribuição exponencial
+            a <- f(x.c)/(M*g(x.c)) 
             u     <- runif(1,0,1)          
         }
         v <- c(v,x.c)
@@ -47,23 +49,33 @@ alpha=0.25
 L=2
 H=3
 set.IT = sim.IT(12000,alpha,L,H)
-set.AR = sim.AR(1200,alpha,L,H,3)
+set.AR = sim.AR(12000,alpha,L,H)
 gTest = function(x,lambda){ lambda*exp(-lambda*x)}
 par(mfrow=c(1,2))
 hist (set.IT[1:15],main="ITM Truncated Pareto",xlim=c(L,H),freq = F)
 curve(pdf(x,alpha,L,H) ,add = T, xlim=c(L,H))    
-hist(set.AR[1:15],main="ARM Truncated Pareto", freq = F)
-curve(pdf(x,alpha,L,H) ,add = T, xlim=c(2,4))
+hist(set.AR[1:15],main="ARM Truncated Pareto",xlim=c(L,H),freq = F)
+curve(pdf(x,alpha,L,H) ,add = T, xlim=c(L,H))
 
 set.seed(2447)
 alpha=0.25
 L=2
 H=3
 set.IT = sim.IT(12000,alpha,L,H)
-set.AR = sim.AR(12000,alpha,L,H,3)
+set.AR = sim.AR(12000,alpha,L,H)
 par(mfrow=c(1,2))
 hist (set.IT,main="ITM Truncated Pareto",xlim=c(L,H),freq = F)
 curve(pdf(x,alpha,L,H) ,add = T, xlim=c(2,4))
 hist(set.AR,main="ARM Truncated Pareto", xlim=c(L,H),freq = F)
 curve(pdf(x,alpha,L,H) ,add = T, xlim=c(2,4))    
 curve(1.2967*1+(x-x),add=T,xlim=c(2,4))
+
+
+library(Pareto)
+par(mfrow=c(1,2))
+hist (set.IT,main="ITM Truncated Pareto",xlim=c(L,H),freq = F)
+curve(pdf(x,alpha,L,H) ,add = T, xlim=c(2,4))
+hist (rPareto(12000,2,0.25,truncation=3),main="ITM Truncated Pareto",xlim=c(L,H),freq = F)
+curve(pdf(x,alpha,L,H) ,add = T, xlim=c(2,4))
+
+

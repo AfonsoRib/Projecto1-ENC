@@ -55,11 +55,11 @@ CDF:
 ITM:
 \[u = \frac{1 - L^\alpha x^{-\alpha}}{1- \left(\frac{L}{H}\right)^\alpha} \Leftrightarrow\]
 \[\Leftrightarrow u\left(1- \left(\frac{L}{H}\right)^\alpha\right) = 1 - L^\alpha x^{-\alpha} \Leftrightarrow\]
-\[\Leftrightarrow u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1= L^\alpha x^{-\alpha} \Leftrightarrow\]
-\[\Leftrightarrow \frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha} = x^{-\alpha} \Leftrightarrow\]
-\[\Leftrightarrow \sqrt[-\alpha]{\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} = x \Leftrightarrow\]
+\[\Leftrightarrow u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1= -L^\alpha x^{-\alpha} \Leftrightarrow\]
+\[\Leftrightarrow -\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha} = x^{-\alpha} \Leftrightarrow\]
+\[\Leftrightarrow \sqrt[-\alpha]{-\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} = x \Leftrightarrow\]
 
-\[\Leftrightarrow F^{-1}(u) = \sqrt[-\alpha]{\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} \]
+\[\Leftrightarrow F^{-1}(u) = \sqrt[-\alpha]{-\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} \]
 
 
 

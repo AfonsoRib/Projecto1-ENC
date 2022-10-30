@@ -2,7 +2,7 @@
 ##                        1.1                     ##
 ####################################################
 
-pdf = function(x, alpha, L,H){
+pdf.pareto = function(x, alpha, L,H){
     (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha))
 }
 
@@ -11,6 +11,7 @@ sim.IT = function(n,alpha, L, H){
     if(L>H) stop("Lower bound greater than Higher bound")
     else if(alpha <= 0) stop("Alpha must be a positive number")
     else if(L <= 0) stop("Lower Bound must be a positive number")
+    else if(n <= 0) stop("n must be a positive number")
     x=0
     t=0
     while(t<n){
@@ -29,6 +30,7 @@ sim.AR = function(n,alpha, L,H){
     if(L>H) stop("Lower bound greater than Higher bound")
     else if(alpha <= 0) stop("Alpha must be a positive number")
     else if(L <= 0) stop("Lower Bound must be a positive number")
+    else if(n <= 0) stop("n must be a positive number")
     x = vector()
     x_rej = vector()
     y = vector()
@@ -84,9 +86,9 @@ set.IT = sim.IT(n,alpha,L,H)
 set.AR = sim.AR(n,alpha,L,H)$x
 par(mfrow=c(1,2))
 hist (set.IT,main="ITM Truncated Pareto",xlim=c(L,H),freq = F)
-curve(pdf(x,alpha,L,H) ,add = T, xlim=c(L,H))
+curve(pdf.pareto(x,alpha,L,H) ,add = T, xlim=c(L,H))
 hist(set.AR,main="ARM Truncated Pareto", xlim=c(L,H),freq = F)
-curve(pdf(x,alpha,L,H) ,add = T, xlim=c(L,H))    
+curve(pdf.pareto(x,alpha,L,H) ,add = T, xlim=c(L,H))    
 
 ## (f) d/dx h(x) = d/dx (0.25 * 2^(0.25) * x^(-1.25))/(1 - (2/3)^(0.25))/(e^-x) =
 ##     e^x (-3.85513/x^2.25 + 3.08411/x^1.25)
@@ -133,3 +135,50 @@ compareTimes(65000,2000,0.25,2,3)
 ####################################################
 ##                        1.2                     ##
 ####################################################
+
+## (a)
+simexp=function(n,lam){
+    x=0
+    t=0
+    while(t<n){
+        t=t+1
+        u=runif(1,0,1)
+        x[t]=-log(u)/lam
+    }
+    x
+}
+
+sim.beta = function(n,a,b){
+    if(a <= 0) stop("a must be a positive number")
+    if(b <= 0) stop("b must be a positive number")
+    if(n <= 0) stop("n must be a positive number")
+
+    t=0
+    Ya= 0 
+    Yab= 0
+    for(i in 1:(a+b)){
+        Y = simexp(n,1)
+        if(i <= a) {Ya = Ya + Y}
+        Yab = Yab + Y
+    }
+    Ya/Yab
+}
+
+
+## (b) The simulation seems to follow the distribution correctly
+set.seed(777)
+a = 3
+b = 1
+m = 11000
+simulation = sim.beta(m,a,b)
+hist(simulation,freq=F)
+curve((x^(a-1) * (1-x)^(b-1))/beta(a,b),add=T)
+
+set.seed(777)
+sim.compare = rbeta(m,a,b)
+quantile(simulation,type=1)
+quantile(simulation,type=2)
+quantile(simulation,type=3)
+quantile(sim.compare,type=1)
+quantile(sim.compare,type=2)
+quantile(sim.compare,type=3)

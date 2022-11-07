@@ -1,6 +1,41 @@
 \documentclass[a4paper, 11pt]{article}
+
+\usepackage{comment} % habilita el uso de comentarios en varias lineas (\ifx \fi) 
+\usepackage{lipsum} %Este paquete genera texto del tipo  Lorem Ipsum. 
 \usepackage{fullpage} % cambia el margen
+
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{mwe}
+\usepackage{adjustbox}
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\usepackage{soul}
+\usepackage{xcolor}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{arydshln}
+\usepackage{bm}
+
+\usepackage[utf8]{inputenc}
+
+\makeatletter
+\def\thickhline{%
+  \noalign{\ifnum0=`}\fi\hrule \@height \thickarrayrulewidth \futurelet
+   \reserved@a\@xthickhline}
+\def\@xthickhline{\ifx\reserved@a\thickhline
+               \vskip\doublerulesep
+               \vskip-\thickarrayrulewidth
+             \fi
+      \ifnum0=`{\fi}}
+\makeatother
+
+\newlength{\thickarrayrulewidth}
+\setlength{\thickarrayrulewidth}{4\arrayrulewidth}
+
+
+\newtheorem{theorem}{Proposition}
 
 \begin{document}
 
@@ -30,13 +65,145 @@ First, we start by analyzing, studying, and using the {\bf inverse-transform (IT
 Following, we use some Monte Carlo methods for integration, i.e.,  we use {\bf naive Monte Carlo}, the Monte Carlo method based on the {\bf antithetic variable} technique, the Monte Carlo method based on the {\bf control variate} technique, and the Monte Carlo method based on {\bf importance sampling} to estimate the value of an integral.
 
 \section{Random Number generation}
+The building block of a simulation is the ability to generate random numbers, where a random number represents the value of a random variable uniformly distributed on (0,1) \cite{simulation}. This section presents two methods that enable the generation of random variables from the U(0,1).
+\subsection{The Inverse Transform(ation) Method (ITM)}
+
+\subsubsection{Continuous Random Variables}
+% This method is based on the proposition:
+\begin{theorem}
+Let  U $\sim$ U(0, 1) random variable. For any continuous c.d.f. F , the random variable X defined by
+
+\centerline{ $X = F^{-1} (U) $}
+
+\noindent has c.d.f. F. ($F^{-1} (u)$ is defined to equal that value x for which $F(x) = u $).
+
+\end{theorem}
+\noindent \underline{Proof} of this proposition on \cite{first_course_in_probability} (section 10)
+
+\noindent{{\bf Important to mention} that} 
+\begin{itemize}
+    \item This procedure can only be used when $F^{-1}$ exists and its expression can easily be obtained
+    \item This method does not generalize well to higher dimensions
+\end{itemize}
+
+
+\noindent Thus, applied to continuous random variables, this algorithm can be {\bf summarized into the following steps}
+
+\begin{enumerate}
+    \item Solve u = F(x) for x ($ = F^{-1}(u)$)
+    \item Generate an observation u from a U(0, 1) distribution
+    \item Set $x = F^{-1}(u)$ (obtained in \textit{1})
+    \item Repeat steps 2 and 3 until the desired sample size is reached
+\end{enumerate}
+
+\subsubsection{Discrete Random Variables \cite{first_course_in_probability}}
+\begin{theorem} 
+Let Z be a discrete random variable with p.m.f.
+
+\centerline{$P(X = x_j ) = p_j , \: \: j = 0, 1, . . . , X_j \sum_{j} p_j = 1$}
+
+\noindent 
+To simulate X for which $P(X = x_j) = p_j$, if u is a realization of U $\sim$ U(0, 1), then
+
+$$
+x= \begin{cases}x_{0} & \text { if } u \leq p_{0} \\ x_{1} & \text { if } p_{0}<u \leq p_{0}+p_{1} \\ \vdots & \\ x_{j} & \text { if } \sum_{i=0}^{j-1} p_{i}<u \leq \sum_{i=0}^{j} p_{i}, \quad j \geq 2 \\ \vdots & \end{cases}
+$$
+
+\noindent is a realization of X
+
+\noindent Since,
+
+$$
+P\left(X=x_{j}\right)=P\left(\sum_{i=0}^{j-1} p_{i}<U \leq \sum_{i=0}^{j} p_{i}\right)=p_{j}, j \geq 1
+$$
+
+\noindent it follows that X has the desired distribution.
+\end{theorem}
+
+\noindent Thus, applied to discrete random variables, this algorithm can be {\bf summarized into the following steps}
+
+\begin{enumerate}
+    \item Generate an observation u from a U(0, 1) distribution 
+    \item If $\bm{u \le p_0}$ set $\bm{x = x_0}$; Else find $\bm{j \ge 1}$ such that $\bm{\sum_{i=0}^{j-1} p_i \: <  U \: \le \sum_{i=0}^{j} p_i}$ and set $\bm{x = x_j}$
+    \item Repeat the previous steps, until the desired sample size is reached
+\end{enumerate}
+
+
+\subsection{The Acceptance-Rejection Method (ARM)}
+
+The idea of the \underline{acceptance-rejection method (ARM)} is to use a  probability function $g(x)$ that is easy to sample, called the {\bf candidate density function}, and then reject the observations that are unlikely under the {\bf target density function} $f(x)$ . 
+
+\noindent {\bf Ideally, one wants a rejection rate below 20 percent}
+
+\subsubsection{Continuous Random Variables}
+
+Let X be a continuous random variable with p.d.f. $f$ from which it is \underline{not easy (or possible) to sample from} (i.e., not easy or possible to find $F^{-1}$) and assume we \underline{find a density function} g(x) from which we can easily simulate from and such that
+
+\centerline{$\exists_{M > 0} : f(x) \le Mg(x), \: \forall_x$}
+
+\noindent Thus, applied to continuous random variables, this algorithm can be {\bf summarized into the following steps}
+
+\begin{enumerate}
+    \item Generate a candidate observation $x_c$ from $g$ 
+    \item Compute the probability of accepting $x_c$ as
+    
+    \centerline{$\alpha = \frac{1}{M} \: \frac{f(x_c)}{g(x_c)}$}
+    
+    \item Generate an observation $u$ from a U(0, 1) distribution 
+    
+    \item If $u \le \alpha$ set $x = x_c$. Otherwise go back to step 1.
+    
+    \item Repeat the previous steps, until the desired sample size is reached
+\end{enumerate}
+
+\noindent {\bf Is also to conclude : }
+\begin{itemize}
+    \item The random variable X generated by the ARM has p.d.f. $f$.
+    \item The number of iterations of the algorithm that are needed is a geometric random variable with mean M
+\end{itemize}
+    
+\subsubsection{Discrete Random Variables}
+Let X be a discrete random variable with p.m.f. $f (x) = P(X = x)$ and support $D_X$ from which it is \underline{not easy (or possible) to directly sample from} (i.e., not easy or possible to find $F^{-1}$) and assume we have \underline{a random variable} Y with p.m.f. $g(x) = P(Y = x)$, \underline{with the same support as X} (i.e., such that $D_Y = D_X$), from which we can easily simulate from and such that
+
+\centerline{$\exists_{M > 0} : f(x) \le Mg(x), \: \forall_{D_x}$}
+
+\noindent Thus, applied to discrete random variables, this algorithm can be {\bf summarized into the following steps}
+
+\begin{enumerate}
+    \item Generate a candidate observation $x_c$ from $g$ 
+    \item Compute the probability of accepting $x_c$ as
+    
+    \centerline{$\alpha = \frac{1}{M} \: \frac{f(x_c)}{g(x_c)}$}
+    
+    \item Generate an observation $u$ from a U(0, 1) distribution 
+    
+    \item If $u \le \alpha$ set $x = x_c$. Otherwise go back to step 1.
+    
+    \item Repeat the previous steps, until the desired sample size is reached
+\end{enumerate}
+
+
+\section{Monte Carlo Methods}
+Monte Carlo methods are a broad class of computational algorithms that allow us to
+perform random experiments on a computer.
 
 \section{Problem Resolution}
 \subsection{1.1}
-\subsubsection{(a)}
 
-PDF:
-\[f(x) = \alpha \frac{L^\alpha x^{-\alpha-1}}{1-\left(\frac{L}{H}^\alpha\right)}, \qquad \alpha, L > 0, \qquad H> L, \qquad x \in [L,H]\]\\
+Before executing any R code we define the pdf function for the Truncated Pareto:
+
+\[f(x) = \alpha \frac{L^\alpha x^{-\alpha-1}}{1-\left(\frac{L}{H}^\alpha\right)}, \qquad \alpha, L > 0, \qquad H> L, \qquad x \in [L,H]\]
+
+Here is the R code for it:
+
+<<>>=
+pdf.pareto = function(x, alpha, L,H){
+    (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha))
+}
+@
+
+\subsubsection{(a) Analytically derive the cumulative distribution function (cdf) $F$ of $X$ as well as its inverse $F^{-1}$}
+
 
 CDF:
 
@@ -62,5 +229,291 @@ ITM:
 \[\Leftrightarrow F^{-1}(u) = \sqrt[-\alpha]{-\frac{u\left(1- \left(\frac{L}{H}\right)^\alpha\right) - 1}{L^\alpha}} \]
 
 
+\subsubsection{(b) Describe how the inverse-transform (IT) method for generating samples from continuous distributions, previously described for the general case, applies here. Implement this method in R for generating a random sample of a given size m from a generic $X \sim TruncatedPareto(\alpha, L, H)$ distribution. Make sure your R code checks that all input variables ($m$,$\alpha$,$L$,$H$) are valid - an error message should be returned when this is not the case. Call your routine sim.IT().}
+
+
+<<>>=
+sim.IT = function(m,alpha, L, H){
+    if(L>H) stop("Lower bound greater than Higher bound")
+    else if(alpha <= 0) stop("Alpha must be a positive number")
+    else if(L <= 0) stop("Lower Bound must be a positive number")
+    else if(m <= 0) stop("m must be a positive number")
+    x=0
+    t=0
+    while(t<m){
+        t=t+1
+        u=runif(1,0,1)
+        up = -(u*(1-((L/H)^alpha))-1)
+        down = L^alpha
+        x[t]= (up/down)^(1/(-alpha))
+        
+    }
+    x    
+}
+@
+
+\break
+\subsubsection{(c) Explicitly derive and simplify the expression of the pdf of \\$X \sim TruncatedPareto(0.25, 2, 3)$.}
+\begin{align*}
+  \frac{d}{dx} \frac{0.25 * 2^{0.25} x^{-1.25}}{1-\left(\frac{2}{3}\right)^{0.25}} = \\
+  = \frac{0.25 * 2^{0.25}}{1-\left(\frac{2}{3}\right)^{0.25}} \frac{d}{dx}x^{-1.25} = \\
+  = \frac{1}{4} \sqrt[4]{2} \frac{1}{1-\left(\frac{2}{3}\right)^{0.25}} \frac{-5}{4} x^{-2.25} = \\
+  = \frac{-5}{16} \sqrt[4]{2} \frac{1}{1-\left(\frac{2}{3}\right)^{0.25}} x^{-2.25} = \\
+    = \frac{-5}{2^{\frac{15}{4}}} \frac{1}{1-\left(\frac{2}{3}\right)^{0.25}} x^{-2.25}
+\end{align*}
+
+\break
+\subsubsection{(d) Use routine sim.IT() to generate a sample of size m = 12000 from
+\[X \sim TruncatedPareto(0.25, 2, 3)\]
+Report the first 15 simulated values. Plot the sample histogram with the true pdf
+superimposed. Is there any evidence that your code may not be generating samples
+from the assumed distribution?}
+
+
+<<plot1, fig.pos="h",fig.height=4, fig.width=8, fig.align='center',fig.cap="First 15 simulated values using the IT method">>=
+library(ggplot2)
+set.seed(2447)
+alpha = 0.25
+L = 2
+H = 3
+m = 12000
+set.IT = sim.IT(m,alpha,L,H)
+pareto <- function(x){pdf.pareto(x,alpha,L,H)}
+p1 <- ggplot(data.frame(it = set.IT[1:15]), aes(x = it)) +
+     geom_histogram(aes(y = after_stat(density)),
+                   binwidth = 0.2,
+                   breaks=seq(L,H,0.1)) +
+                   geom_function(fun=pareto)
+plot(p1)
+@
+
+15 values is sample size to make any decisive conclusion therefore we cannot conclude that the code is not generating samples correctly. We can see that it has more samples in the beginning than in the end as we want so it can be likely that it is generating samples from the assumed distribution altough not conclusively.
+
+\break
+\subsubsection{(e) Describe how the acceptance-rejection (AR) method for generating samples from continuous distributions, previously described for the general case, applies here. Implement this method in R for generating a random sample of a given size m from a generic $X \sim TruncatedPareto(\alpha, L, H)$ distribution. Make sure your R code checks that all in put variables ($m$, $\alpha$, $L$ and $H$) are valid - an error message should be returned when this is not the case. Besides returning the simulated values of the target distribution, your R routine should also return the simulated values that were rejected plus the rejection rate. Call your routine sim.AR().}
+
+TODO descrever AR!!!!!
+
+<<>>=
+sim.AR = function(m,alpha, L,H){
+    if(L>H) stop("Lower bound greater than Higher bound")
+    else if(alpha <= 0) stop("Alpha must be a positive number")
+    else if(L <= 0) stop("Lower Bound must be a positive number")
+    else if(m <= 0) stop("m must be a positive number")
+    x = vector()
+    x_rej = vector()
+    y = vector()
+    y_rej = vector()
+    f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
+    g = function(x){exp(-x)}
+    h = function(x){f(x)/g(x)}
+    M = optimize(h, c(L,H),maximum = T)$objective
+    g.CDF=function(x){-exp(-x)+1}
+    g.ITM = function(x){-log(1-x)}
+    for(i in 1:m){
+        u <- 1
+        a <- 0
+        while(u> a){
+            x.c   <- g.ITM(runif(1,g.CDF(2),g.CDF(3))) # O g.CDF aqui serve
+            # para não estar a gerar valores desnecessários 
+            # através da distribuição exponencial
+            a <- f(x.c)/(M*g(x.c)) 
+            u <- runif(1,0,1)
+            if(u > a) {
+                x_rej = c(x_rej, x.c )
+                y_rej = c(y_rej, u*M*g(x.c))
+            }
+        }
+        x <- c(x,x.c)
+        y <- c(y,u*M*g(x.c))
+    }
+    list(x = x,x_rej = x_rej,y = y, y_rej =y_rej,
+         failRate= length(x_rej)/(length(x_rej) + length(x)))
+}
+@ 
+\break
+\subsubsection{(f) Explicitly identify the AR candidate density function for
+$X \sim TruncatedPareto(0.25, 2, 3)$
+and compute by hand the constants of the AR method (namely, $M$ and the acceptance
+probability $\alpha$). Use the R function optimize() or other to confirm the result that you obtained analytically for $M$.}
+
+We are using $Y \sim Exp(1)$ as our AR candidate density function.
+
+\begin{gather*}
+  \frac{d}{dx} h(x) = \frac{d}{dx}  \frac{0.25 * 2^{0.25} * x^{-1.25}}{1 - \left(\frac{2}{3}\right)^{0.25}}\frac{1}{e^{-x}} = \\
+  e^x \left(\frac{-3.85513}{x^{2.25}} + \frac{3.08411}{x^{1.25}}\right) \\
+  \frac{d}{dx} h(x) = 0 \Rightarrow x \approx 1.25
+\end{gather*}
+
+A derivada é sempre positiva a partir de $1.25$, logo é crescente no intervalo $[1.25, +\infty]$. Como só consideramos o Intervalo $[2,3]$ e esse intervalo pertence ao intervalo onde a função é monotona crescente logo $x = 3$ vai ser o ponto onde estará $M$.
+
+\[h(3) = 15.68958 \Leftrightarrow M = 15.68958\]
+
+
+<<>>=
+    f = function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
+    g = function(x){exp(-x)}
+    h = function(x){f(x)/g(x)}
+    M = optimize(h, c(L,H),maximum = T)
+    M
+@
+
+We can see that the R code gives us values similar to the ones computed by hand.\\
+
+Now that we we have M we can calculate the acceptance probability $\alpha$:
+
+\[\alpha = \frac{1}{M} \frac{0.25 * 2^{0.25} * x_c^{-1.25}}{1 - \left(\frac{2}{3}\right)^{0.25}}\frac{1}{e^{-x_c}} \]
+
+\break
+\subsubsection{(g) Use routine sim.AR() to generate a sample of size m = 12000 from
+\[X \sim TruncatedPareto(0.25, 2, 3)\]
+Report the first 15 simulated values of the $X \sim TruncatedPareto(0.25, 2, 3)$ . Report the rejection rate. Plot the sample histogram with the true pdf superimposed. Is there any evidence that your code may not be generating samples from the assumed distribution? Graphically display the hit-miss plot (as done in class – week 2). Note: the two plots requested here should be displayed in a single side-by-side Figure.}
+<<plot2, fig.pos="h",fig.height=4, fig.width=10,fig.align='center', fig.cap="First 15 simulated values using the AR method and the hit-miss plot">>=
+## plot with rejected point and accepted points
+alpha = 0.25
+L = 2
+H = 3
+m=12000
+f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
+g = function(x){exp(-x)}
+h = function(x){f(x)/g(x)}
+M = optimize(h, c(L,H),maximum = T)$objective
+Mg= function(x){M*g(x)}
+set.AR = sim.AR(m,alpha,L,H)
+pareto <- function(x){pdf.pareto(x,alpha,L,H)}
+
+library(ggplot2)
+library(gridExtra)
+p2 <- ggplot(data.frame(it = set.AR$x[1:15]), aes(x = it)) +
+     geom_histogram(aes(y = after_stat(density)),
+                   binwidth = 0.2,
+                   breaks=seq(L,H,0.1)) +
+    geom_function(fun=pareto)
+p3 <- ggplot( ) +
+    geom_point(data.frame(list(x_rej = set.AR$x_rej,y_rej =set.AR$y_rej)),
+               mapping = aes(x = x_rej, y=y_rej),
+               size = 0.05,
+               colour = "red"
+               ) +
+    geom_point(data.frame(list(x = set.AR$x,y =set.AR$y)),
+               mapping = aes(x = x, y=y),
+               size = 0.05,
+               colour = "black"
+               ) +
+    #geom_point(aes(x = x, y=y)) +
+    xlim(L,H) + geom_function(fun=f, aes(colour = "f(x)")) +
+    geom_function(fun=Mg, aes(colour = "Mg(x)")) 
+
+grid.arrange(p2, p3, ncol = 2)
+@
+
+\subsubsection{(h) Find an R package that has a built-in function for generating random samples from the Truncated Pareto distribution. Compare the computational times of that built-in routine with those of routines sim.IT() and sim.AR() (you can use the R routine proc.time() as done in class – week 2). Consider a sample of size m = 65000 in your simulations. Note that this comparison should be made across of a high number of runs (consider nruns = 2000) and thus the mean times and standard deviations should be reported. Which routine is faster?}
+
+<<>>=
+compareTimes = function(m,nruns,alpha,L,H){
+    library(Pareto)
+    v.IT = vector()
+    v.AR = vector()
+    v.Pareto = vector()
+    i=0
+    while(i < nruns){
+        print(i)
+        ptm <- proc.time()
+        z = sim.IT(m,alpha,L,H)
+        v.IT = c(v.IT,proc.time() -ptm)
+        ptm <- proc.time()
+        z = sim.AR(m,alpha,L,H)
+        v.AR = c(v.AR,proc.time() -ptm)
+        ptm <- proc.time()
+        z=rPareto(m,L,alpha,truncation=H)
+        v.Pareto = c(v.Pareto,proc.time() -ptm)
+        i = i +1
+    }
+    printf <- function(...) invisible(print(sprintf(...)))
+    printf("ITM mean: %f", mean(v.IT))
+    printf("ITM standard deviation: %f", sd(v.IT))
+    printf("ARM mean: %f", mean(v.AR))
+    printf("ARM standard deviation: %f", sd(v.AR))
+    printf("built-in mean: %f", mean(v.Pareto))
+    printf("built-in standard deviation: %f", sd(v.Pareto))
+    
+}
+
+#compareTimes(65000,2000,0.25,2,3) # comentário para apagar: rodar quando entregar
+@ 
+
+The built-in function is the fastest.
+
+\subsection{1.2}
+\subsubsection{(a) Implement the exponential-based method in R for generating a sample from X ∼
+Beta(a, b), which has probability density function (p.d.f.)
+f (x) = xa−1(1 − x)b−1
+B(a, b) , α, β > 0, x ∈ [0, 1]
+where B(a, b) is the beta function (R has a built-in function for this). Call your routine
+sim.beta() and let it receive as input a generic sample size m and the Beta distribution
+parameters a and b (note that here a, b ∈ N). Make sure your R code checks that all
+input variables (m, a and b) are valid - an error message should be returned when this
+is not the case. Provide both algorithm and R code.}
+
+<<>>=
+simexp=function(n,lam){
+    x=0
+    t=0
+    while(t<n){
+        t=t+1
+        u=runif(1,0,1)
+        x[t]=-log(u)/lam
+    }
+    x
+}
+
+sim.beta = function(n,a,b){
+    if(a <= 0) stop("a must be a positive number")
+    if(b <= 0) stop("b must be a positive number")
+    if(n <= 0) stop("n must be a positive number")
+
+    t=0
+    Ya= 0 
+    Yab= 0
+    for(i in 1:(a+b)){
+        Y = simexp(n,1)
+        if(i <= a) {Ya = Ya + Y}
+        Yab = Yab + Y
+    }
+    Ya/Yab
+}
+@
+
+\subsubsection{(b) Use routine sim.beta() to generate a sample of size m = 11000 from X ∼ Beta(3, 1). Plot the histogram with the pdf superimposed. Comment the results.}
+<<>>=
+# (b) The simulation seems to follow the distribution correctly
+set.seed(777)
+a = 3
+b = 1
+m = 11000
+simulation = sim.beta(m,a,b)
+curveFun = function(x){(x^(a-1) * (1-x)^(b-1))/beta(a,b)}
+## hist(simulation,freq=F)
+## curve((x^(a-1) * (1-x)^(b-1))/beta(a,b),add=T)
+p4 <- ggplot(data.frame(sim = simulation ), aes(x = simulation)) +
+     geom_histogram(aes(y = after_stat(density)),
+                   binwidth = 0.1,
+                   breaks=seq(0,1,0.1)) +
+    geom_function(fun=curveFun)
+
+plot(p4)
+@ 
+\subsubsection{(c) Report the simulation quantiles Q1, Q2 and Q3 referring to the previous subparagraph against the true quantiles of the Beta(3, 1) distribution}
+<<>>=
+set.seed(777)
+sim.compare = rbeta(m,a,b)
+quantile(simulation,type=1)
+quantile(simulation,type=2)
+quantile(simulation,type=3)
+quantile(sim.compare,type=1)
+quantile(sim.compare,type=2)
+quantile(sim.compare,type=3)
+@ 
 
 \end{document}
+ 

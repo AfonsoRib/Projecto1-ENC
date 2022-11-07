@@ -7,14 +7,14 @@ pdf.pareto = function(x, alpha, L,H){
 }
 
 ## (b)
-sim.IT = function(n,alpha, L, H){
+sim.IT = function(m,alpha, L, H){
     if(L>H) stop("Lower bound greater than Higher bound")
     else if(alpha <= 0) stop("Alpha must be a positive number")
     else if(L <= 0) stop("Lower Bound must be a positive number")
-    else if(n <= 0) stop("n must be a positive number")
+    else if(m <= 0) stop("n must be a positive number")
     x=0
     t=0
-    while(t<n){
+    while(t<m){
         t=t+1
         u=runif(1,0,1)
         up = -(u*(1-((L/H)^alpha))-1)
@@ -24,6 +24,24 @@ sim.IT = function(n,alpha, L, H){
     }
     x    
 }
+
+
+
+## (d) Since 15 samples is too small to make any conclusion, we cannot conclude that the code is not generating samples correctly. We can see that it has more samples in the beginning than in the end as we want so it can be likely that it is generating samples from the assumed distribution altough not conclusivly
+
+library(ggplot2)
+set.seed(2447)
+alpha = 0.25
+L = 2
+H = 3
+set.IT = sim.IT(12000,alpha,L,H)
+par <- function(x){pdf.pareto(x,alpha,L,H)}
+p <- ggplot(data.frame(it = set.IT[1:15]), aes(x = it)) +
+     geom_histogram(aes(y = after_stat(density)),
+                   binwidth = 0.2,
+                   breaks=seq(L,H,0.1)) +
+                   geom_function(fun=par)
+plot(p)     
 
 ## (e)
 sim.AR = function(n,alpha, L,H){
@@ -56,7 +74,7 @@ sim.AR = function(n,alpha, L,H){
         x <- c(x,x.c)
         y <- c(y,u*M*g(x.c))
     }
-    list(x = x,x_rej = x_rej,y = y, y_rej =y_rej)
+    list(x = x,x_rej = x_rej,y = y, y_rej =y_rej, failRate= length(x_rej)/(length(x_rej) + length(x)))
 }
 
 ## plot with rejected point and accepted points
@@ -69,13 +87,13 @@ h = function(x){f(x)/g(x)}
 M = optimize(h, c(L,H),maximum = T)$objective
 Mg= function(x){M*g(x)}
 samples = sim.AR(12000,alpha,L,H)
-plot(f,add=T,xlim=c(L,H),col="green")
+plot(f,add,xlim=c(L,H),col="green")
 curve(Mg,add=T,xlim=c(L,H))
 points(samples$x,samples$y,pch=4,cex=1,lwd=1.5)
 points(samples$x_rej,samples$y_rej,col=2,pch=4,cex=1,lwd=1.5)
 
 
-## (d) Since 15 samples is too small to make any conclusion, we cannot conclude that the code is not generating samples correctly. We can see that it has more samples in the beginning than in the end as we want so it can be likely that it is generating samples from the assumed distribution altough not conclusivly
+
 ## (g)
 set.seed(2447)
 n=12000

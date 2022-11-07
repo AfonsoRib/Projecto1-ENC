@@ -292,8 +292,11 @@ plot(p1)
 \break
 \subsubsection{(e) Describe how the acceptance-rejection (AR) method for generating samples from continuous distributions, previously described for the general case, applies here. Implement this method in R for generating a random sample of a given size m from a generic $X \sim TruncatedPareto(\alpha, L, H)$ distribution. Make sure your R code checks that all in put variables ($m$, $\alpha$, $L$ and $H$) are valid - an error message should be returned when this is not the case. Besides returning the simulated values of the target distribution, your R routine should also return the simulated values that were rejected plus the rejection rate. Call your routine sim.AR().}
 
-TODO descrever AR!!!!!
+Applying the general AR method to this case, we instanciate $f(x)$ with the pareto distribution's pdf followed by instanciating $g(x)$ with the candidate density function. With $g(x)$ and $f(x)$ we define $h(x)$ which represents the ratio between $f(x)$ and $g(x)$. This allows us to find $M$, maximum of $h(x)$. Since $h(x)$ is the ratio of $f(x)$ and $g(x)$ and $M$ is the maximum of $h(x)$, $Mg(x)$ will always be greater than $f(x)$ therefore $\frac{1}{M}h(x)$ values are between 0 and 1. After defining the three main functions, we define $g(x)$'s CDF and ITM that we will use later for sampling variables.\\
 
+Next comes the sampling. We generate a candidate x.c from $g(x)$ using it's Inverse Transformation $g.ITM$. We calculate the acceptance rate and generate an observation u from a uniform distribution where u is between 0 and 1. If this u is greater than the acceptance rate it means it is outside our target function $f(x)$ and we store it in our rejected sample and generate a new observation u. If it falls under the acceptance rate we accept it and store it in our vectors. We do this a couple of times until we have the desired amount of sample values.
+
+Next step is variable sampling
 <<>>=
 sim.AR = function(m,alpha, L,H){
     if(L>H) stop("Lower bound greater than Higher bound")

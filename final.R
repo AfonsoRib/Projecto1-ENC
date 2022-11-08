@@ -32,7 +32,7 @@ H = 3
 m = 12000
 set.IT = sim.IT(m,alpha,L,H)
 pareto <- function(x){pdf.pareto(x,alpha,L,H)}
-p1 <- ggplot(data.frame(it = set.IT[1:15]), aes(x = it)) +
+p1 <- ggplot(data.frame(sample = set.IT[1:15]), aes(x = sample)) +
      geom_histogram(aes(y = after_stat(density)),
                    binwidth = 0.2,
                    breaks=seq(L,H,0.1)) +
@@ -92,23 +92,20 @@ pareto <- function(x){pdf.pareto(x,alpha,L,H)}
 
 library(ggplot2)
 library(gridExtra)
-p2 <- ggplot(data.frame(it = set.AR$x[1:15]), aes(x = it)) +
+p2 <- ggplot(data.frame(sample = set.AR$x[1:15]), aes(x = sample)) +
      geom_histogram(aes(y = after_stat(density)),
                    binwidth = 0.2,
                    breaks=seq(L,H,0.1)) +
     geom_function(fun=pareto)
 p3 <- ggplot( ) +
-    geom_point(data.frame(list(x_rej = set.AR$x_rej,y_rej =set.AR$y_rej)),
-               mapping = aes(x = x_rej, y=y_rej),
-               size = 0.05,
-               colour = "red"
-               ) +
     geom_point(data.frame(list(x = set.AR$x,y =set.AR$y)),
                mapping = aes(x = x, y=y),
                size = 0.05,
-               colour = "black"
-               ) +
-    #geom_point(aes(x = x, y=y)) +
+               colour = "black") +
+    geom_point(data.frame(list(x_rej = set.AR$x_rej,y_rej =set.AR$y_rej)),
+               mapping = aes(x = x_rej, y=y_rej),
+               size = 0.05,
+               colour = "red") +
     xlim(L,H) + geom_function(fun=f, aes(colour = "f(x)")) +
     geom_function(fun=Mg, aes(colour = "Mg(x)")) 
 
@@ -186,9 +183,7 @@ b = 1
 m = 11000
 simulation = sim.beta(m,a,b)
 curveFun = function(x){(x^(a-1) * (1-x)^(b-1))/beta(a,b)}
-## hist(simulation,freq=F)
-## curve((x^(a-1) * (1-x)^(b-1))/beta(a,b),add=T)
-p4 <- ggplot(data.frame(sim = simulation ), aes(x = simulation)) +
+p4 <- ggplot(data.frame(sample = simulation ), aes(x = sample)) +
      geom_histogram(aes(y = after_stat(density)),
                    binwidth = 0.1,
                    breaks=seq(0,1,0.1)) +

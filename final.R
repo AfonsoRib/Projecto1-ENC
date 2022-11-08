@@ -50,11 +50,11 @@ sim.AR = function(m,alpha, L,H){
     y = vector()
     y_rej = vector()
     f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-    g = function(x){exp(-x)}
+    g = function(x){alpha*exp((-alpha)*x)}
     h = function(x){f(x)/g(x)}
     M = optimize(h, c(L,H),maximum = T)$objective
-    g.CDF=function(x){-exp(-x)+1}
-    g.ITM = function(x){-log(1-x)}
+    g.CDF=function(x){1-exp(-alpha*x)}
+    g.ITM = function(x){log(1-x)/(-alpha)}
     for(i in 1:m){
         u <- 1
         a <- 0
@@ -83,7 +83,7 @@ L = 2
 H = 3
 m=12000
 f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-g = function(x){exp(-x)}
+g = function(x){alpha*exp((-alpha)*x)}
 h = function(x){f(x)/g(x)}
 M = optimize(h, c(L,H),maximum = T)$objective
 Mg= function(x){M*g(x)}

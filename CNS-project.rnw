@@ -308,11 +308,11 @@ sim.AR = function(m,alpha, L,H){
     y = vector()
     y_rej = vector()
     f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-    g = function(x){exp(-x)}
+    g = function(x){alpha*exp((-alpha)*x)}
     h = function(x){f(x)/g(x)}
     M = optimize(h, c(L,H),maximum = T)$objective
-    g.CDF=function(x){-exp(-x)+1}
-    g.ITM = function(x){-log(1-x)}
+    g.CDF=function(x){1-exp(-alpha*x)}
+    g.ITM = function(x){log(1-x)/(-alpha)}
     for(i in 1:m){
         u <- 1
         a <- 0
@@ -337,7 +337,7 @@ sim.AR = function(m,alpha, L,H){
 \break
 \subsubsection{(f) Explicitly identify the AR candidate density function for $X \sim TruncatedPareto(0.25, 2, 3)$ and compute by hand the constants of the AR method (namely, $M$ and the acceptance probability $\alpha$). Use the R function optimize() or other to confirm the result that you obtained analytically for $M$.}
 
-We are using $Y \sim Exp(1)$ as our AR candidate density function.
+We are using $Y \sim Exp(\alpha)$ as our AR candidate density function.
 
 \begin{gather*}
   \frac{d}{dx} h(x) = \frac{d}{dx}  \frac{0.25 * 2^{0.25} * x^{-1.25}}{1 - \left(\frac{2}{3}\right)^{0.25}}\frac{1}{e^{-x}} = \\
@@ -345,14 +345,14 @@ We are using $Y \sim Exp(1)$ as our AR candidate density function.
   \frac{d}{dx} h(x) = 0 \Rightarrow x \approx 1.25
 \end{gather*}
 
-A derivada é sempre positiva a partir de $1.25$, logo é crescente no intervalo $[1.25, +\infty]$. Como só consideramos o Intervalo $[2,3]$ e esse intervalo pertence ao intervalo onde a função é monotona crescente logo $x = 3$ vai ser o ponto onde estará $M$.
+the derivative is always positive after$1.25$, therefores it grows in the interval $[1.25, +\infty]$. Since we only consider the interval $[2,3]$ and that interval belongs to a monotically increasing interval, $x = 3$ is going to be the point where $M$ will be.
 
 \[h(3) = 15.68958 \Leftrightarrow M = 15.68958\]
 
 
 <<>>=
     f = function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-    g = function(x){exp(-x)}
+    g = function(x){alpha*exp((-alpha)*x)}
     h = function(x){f(x)/g(x)}
     M = optimize(h, c(L,H),maximum = T)
     M
@@ -375,7 +375,7 @@ L = 2
 H = 3
 m=12000
 f =function (x){ (alpha * L^(alpha) * x^(-alpha-1))/(1 - (L/H)^(alpha)) }
-g = function(x){exp(-x)}
+g = function(x){alpha*exp((-alpha)*x)}
 h = function(x){f(x)/g(x)}
 M = optimize(h, c(L,H),maximum = T)$objective
 Mg= function(x){M*g(x)}
@@ -496,6 +496,7 @@ plot(p4)
 @
 
 The simulation seems to follow the distribution correctly.
+
 \subsubsection{(c) Report the simulation quantiles Q1, Q2 and Q3 referring to the previous subparagraph against the true quantiles of the Beta(3, 1) distribution}
 <<>>=
 set.seed(777)
@@ -524,8 +525,8 @@ i <- integrate(f, 2, Inf)$value; i
 <<>>=
 p <- 1-pnorm(2,0,1); p
 @
-   Integral's integrand function : f(x) = exp(-x^2/2)/sqrt(2*pi) which is similar to the normal distribution.
- P(X > 2)
+   Integral's integrand function : $f(x) = \frac{e^{\frac{-x^2}{2}}}{\sqrt(2*pi)}$ which is similar to the normal distribution.
+$P(X > 2)$
 
 \subsubsection{(c)}
 <<>>=

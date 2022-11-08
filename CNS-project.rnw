@@ -522,9 +522,10 @@ i <- integrate(f, 2, Inf)$value; i
 
 \subsubsection{(b)}
 <<>>=
-p <- 1-pcauchy(2,0,1); p
+p <- 1-pnorm(2,0,1); p
 @
-
+   Integral's integrand function : f(x) = exp(-x^2/2)/sqrt(2*pi) which is similar to the normal distribution.
+ P(X > 2)
 
 \subsubsection{(c)}
 <<>>=

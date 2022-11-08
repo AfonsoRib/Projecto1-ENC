@@ -214,8 +214,10 @@ set.seed(1111)
 f <- function(x){exp(-x^2/2)/sqrt(2*pi)}
 i <- integrate(f, 2, Inf)$value; i
 
-## (b)
-p <- 1-pcauchy(2,0,1); p
+#b)
+# Integral's integrand function : f(x) = exp(-x^2/2)/sqrt(2*pi) which is similar to the normal distribution.
+# P(X > 2)
+p <- 1-pnorm(2,0,1); p
 
 ## (c)
 

@@ -335,10 +335,7 @@ sim.AR = function(m,alpha, L,H){
 }
 @ 
 \break
-\subsubsection{(f) Explicitly identify the AR candidate density function for
-$X \sim TruncatedPareto(0.25, 2, 3)$
-and compute by hand the constants of the AR method (namely, $M$ and the acceptance
-probability $\alpha$). Use the R function optimize() or other to confirm the result that you obtained analytically for $M$.}
+\subsubsection{(f) Explicitly identify the AR candidate density function for $X \sim TruncatedPareto(0.25, 2, 3)$ and compute by hand the constants of the AR method (namely, $M$ and the acceptance probability $\alpha$). Use the R function optimize() or other to confirm the result that you obtained analytically for $M$.}
 
 We are using $Y \sim Exp(1)$ as our AR candidate density function.
 
@@ -420,13 +417,13 @@ compareTimes = function(m,nruns,alpha,L,H){
     v.Pareto = vector()
     i=0
     while(i < nruns){
-        print(i)
+#        print(i)
         ptm <- proc.time()
         z = sim.IT(m,alpha,L,H)
         v.IT = c(v.IT,proc.time() -ptm)
-        ptm <- proc.time()
-        z = sim.AR(m,alpha,L,H)
-        v.AR = c(v.AR,proc.time() -ptm)
+        ## ptm <- proc.time()
+        ## z = sim.AR(m,alpha,L,H)
+        ## v.AR = c(v.AR,proc.time() -ptm)
         ptm <- proc.time()
         z=rPareto(m,L,alpha,truncation=H)
         v.Pareto = c(v.Pareto,proc.time() -ptm)
@@ -448,15 +445,7 @@ compareTimes = function(m,nruns,alpha,L,H){
 The built-in function is the fastest.
 
 \subsection{1.2}
-\subsubsection{(a) Implement the exponential-based method in R for generating a sample from X ∼
-Beta(a, b), which has probability density function (p.d.f.)
-f (x) = xa−1(1 − x)b−1
-B(a, b) , α, β > 0, x ∈ [0, 1]
-where B(a, b) is the beta function (R has a built-in function for this). Call your routine
-sim.beta() and let it receive as input a generic sample size m and the Beta distribution
-parameters a and b (note that here a, b ∈ N). Make sure your R code checks that all
-input variables (m, a and b) are valid - an error message should be returned when this
-is not the case. Provide both algorithm and R code.}
+\subsubsection{(a)}
 
 <<>>=
 simexp=function(n,lam){
@@ -487,9 +476,8 @@ sim.beta = function(n,a,b){
 }
 @
 
-\subsubsection{(b) Use routine sim.beta() to generate a sample of size m = 11000 from X ∼ Beta(3, 1). Plot the histogram with the pdf superimposed. Comment the results.}
+\subsubsection{(b)}
 <<>>=
-# (b) The simulation seems to follow the distribution correctly
 set.seed(777)
 a = 3
 b = 1
@@ -505,7 +493,9 @@ p4 <- ggplot(data.frame(sim = simulation ), aes(x = simulation)) +
     geom_function(fun=curveFun)
 
 plot(p4)
-@ 
+@
+
+The simulation seems to follow the distribution correctly.
 \subsubsection{(c) Report the simulation quantiles Q1, Q2 and Q3 referring to the previous subparagraph against the true quantiles of the Beta(3, 1) distribution}
 <<>>=
 set.seed(777)
@@ -517,6 +507,138 @@ quantile(sim.compare,type=1)
 quantile(sim.compare,type=2)
 quantile(sim.compare,type=3)
 @ 
+
+\subsection{2.1}
+\subsubsection{(a)}
+
+<<>>=
+set.seed(1111)
+
+f <- function(x){exp(-x^2/2)/sqrt(2*pi)}
+
+i <- integrate(f, 2, Inf)$value; i
+
+@ 
+
+\subsubsection{(b)}
+<<>>=
+p <- 1-pcauchy(2,0,1); p
+@
+
+
+\subsubsection{(c)}
+<<>>=
+set.seed(1111)
+
+g <- function(y){1/y^2 * exp(-(1/y)^2/2)/sqrt(2*pi)}
+
+m=20000
+x <- runif(m,0,1/2)
+
+I.mc1 <- (1/2-0) * mean(g(x)); I.mc1
+# 0.02301548
+V.mc1 <- (1/2-0)^2 * var(g(x))/m; V.mc1
+# 5.579652e-08
+@
+
+\subsubsection{(d)}
+
+<<>>=
+set.seed(1111)
+
+# Naive MC Estimator - Interval 0 to 1.
+set.seed(1111)
+
+g <- function(y){((exp(-1/(2*y^2)) * (1/y^2))- (exp((-(-(x+1))^2)/2)))/sqrt(2*pi)}
+#g <- function(y){(exp((-(1/((x-1)^2))/2)))/(sqrt(2*pi) * ((x-1)^2))}
+m=20000
+x <- runif(m,0,1)
+
+I.mc2 <- (1-0) * mean(g(x)); I.mc2
+# 0.02408417
+V.mc2 <- var(g(x))/m; V.mc2
+# 1.543204e-06
+@
+
+   As x gets bigger, values tend to 0, so when we calculate the integral to the interval [0,1], we will get
+bigger results than the interval [2,Inf].
+
+
+\subsubsection{(e)}
+
+<<>>=
+set.seed(1111)
+
+f <- function(y){((exp(-1/(2*y^2)) * (1/y^2))- (exp((-(x+1)^2)/2)))/sqrt(2*pi)}
+
+m=20000
+x=runif(m/2,0,1)
+
+I.hat1=mean(f(x))
+I.hat2=mean(f(1-x))
+I.a =(I.hat1+I.hat2)/2; I.a
+# 0.02287152
+V.a <- 1/m*(1+cor(f(x),f(1-x)))*var(f(x)); V.a
+# 4.167622e-07
+
+# control-variate technique
+set.seed(1111)
+
+f <- function(y){((exp(-1/(2*y^2)) * (1/y^2))- (exp((-(x+1)^2)/2)))/sqrt(2*pi)}
+g <- function(y){y}
+
+m = 20000
+u1 = runif(m)
+cast = -(cov(u1,f(u1)))/var(u1)
+cast
+# -0.3850052
+x = runif(m,0,1)
+
+I.c <- mean(f(x)+cast*(g(x)-0.5)); I.c
+# 0.02222363
+V.c <- var(f(x))*(1-cor(f(x),g(x))^2)/m; V.c
+# 1.529684e-07
+@
+
+
+\subsubsection{(f)}
+<<>>=
+100*(1-(V.c/V.mc2))
+# 90.08761
+
+100*(1-(V.a/V.mc2))
+# 72.9937
+
+res <- matrix(0,3,3)
+colnames(res) <- c("Naive MC", "Ant MC", "Control MC")
+rownames(res) <- c("Estimate", "Variance","% var red")
+res[1,] <- round(c(I.mc2, I.a, I.c),6)
+res[2,] <- round(c(V.mc2, V.a, V.c),9)
+res[3,] <- c("-", round(100*(1-V.a/V.mc2),1), round(100*(1-V.c/V.mc2),1))
+res
+@
+
+\subsubsection{(g)}
+<<>>=
+set.seed(1111);
+m = 20000
+h <- function(y){((exp(-1/(2*y^2)) * (1/y^2))- (exp((-(x+1)^2)/2)))/sqrt(2*pi)}
+u = runif(m,0,1)
+x = 2/(1-u) # 1-2/x => x = 2/(1-u)
+I.hat.is <- mean(h(x)); I.hat.is
+# 0.03015236
+V.is <- var(h(x))/m; V.is
+# 3.353631e-08
+
+# % variance reduction to MC2
+100*(1-V.is/V.mc2)
+# 97.82684
+
+# % variance reduction to MC1
+100*(1-V.is/V.mc1)
+# 39.89533
+@ 
+
 
 \end{document}
  
